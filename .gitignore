@@ -1,0 +1,28 @@
+# Python virtual environment
+venv/
+env/
+ENV/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Large index files
+*.index
+*.npy
+
+# Large data files
+*.jsonl
+System_KG_Implementation/semantic_conditions.jsonl
+System_KG_Implementation/DR_faiss.index
+System_KG_Implementation/binning_faiss.index
+
+# IDEs
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db

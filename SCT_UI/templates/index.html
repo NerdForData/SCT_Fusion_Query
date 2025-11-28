@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SCT Fusion Query - Semantic Question Answering</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" type="text/css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- KaTeX for LaTeX rendering -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <!-- Marked.js for markdown parsing -->
+    <script src="https://cdn.jsdelivr.net/npm/marked@11.0.0/marked.min.js"></script>
+</head>
+
+<body>
+    <div class="chat-app-container">
+        <!-- Header Section -->
+        <div class="header">
+            <div class="header-content">
+                <i class="bi bi-lightning-charge-fill header-icon"></i>
+                <div class="header-text">
+                    <h1 class="heading">SCT Fusion Query System</h1>
+                    <p class="subheading">Semantic-Condition Transformation with Conditional RAG</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Information Banner -->
+        <div class="info-container">
+            <div class="info-card">
+                <i class="bi bi-info-circle info-icon"></i>
+                <div class="info-text">
+                    <strong>How it works:</strong> This system combines Digital Reference ontology knowledge with research paper insights.
+                    Ask technical questions about semiconductor manufacturing, binning, or Digital Reference concepts.
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Chat Container -->
+        <div class="centered-container">
+            <!-- Input Form -->
+            <form id="chat-form" method="POST" action="#">
+                <div class="form-container">
+                    <input 
+                        type="text" 
+                        class="query-input" 
+                        id="query-input" 
+                        name="query-input" 
+                        required 
+                        placeholder="Ask a question about binning, yield, or Digital Reference..."
+                        autocomplete="off"
+                    >
+                    <button type="submit" class="submit-button" id="submit-button">
+                        <i class="bi bi-arrow-right-circle"></i>
+                    </button>
+                </div>
+            </form>
+
+            <!-- Response Container -->
+            <div class="response-container" id="response-container">
+                <!-- Welcome message -->
+                <div class="welcome-message">
+                    <i class="bi bi-chat-dots welcome-icon"></i>
+                    <p>Start by asking a question above. Try:</p>
+                    <div class="example-questions">
+                        <button class="example-btn" onclick="fillExample('What is binning?')">What is binning?</button>
+                        <button class="example-btn" onclick="fillExample('How are chips binned?')">How are chips binned?</button>
+                        <button class="example-btn" onclick="fillExample('Explain bin yield optimization')">Explain bin yield</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Control Buttons -->
+        <div class="control-buttons">
+            <button id="reset-button" class="control-button reset-btn">
+                <i class="bi bi-arrow-counterclockwise"></i> Reset Conversation
+            </button>
+            <button id="followup-toggle" class="control-button followup-btn">
+                <i class="bi bi-lightbulb"></i> <span id="followup-text">Enable</span> Follow-up Questions
+            </button>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay hidden">
+        <div class="loading-spinner"></div>
+        <p class="loading-text">Processing your question...</p>
+    </div>
+
+    <script>
+        // State management
+        let followupEnabled = false;
+
+        // Toggle follow-up questions
+        document.getElementById('followup-toggle').addEventListener('click', function() {
+            followupEnabled = !followupEnabled;
+            const text = document.getElementById('followup-text');
+            text.textContent = followupEnabled ? 'Disable' : 'Enable';
+            this.classList.toggle('active', followupEnabled);
+        });
+
+        // Reset conversation
+        document.getElementById('reset-button').addEventListener('click', async function(event) {
+            event.preventDefault();
+            
+            if (!confirm('Are you sure you want to reset the conversation?')) return;
+            
+            const responseContainer = document.getElementById('response-container');
+            responseContainer.innerHTML = `
+                <div class="welcome-message">
+                    <i class="bi bi-chat-dots welcome-icon"></i>
+                    <p>Conversation reset. Start by asking a new question!</p>
+                </div>
+            `;
+            
+            // Call reset endpoint
+            try {
+                await fetch('/reset', { method: 'POST' });
+            } catch (error) {
+                console.error('Reset failed:', error);
+            }
+        });
+
+        // Fill example question
+        function fillExample(text) {
+            document.getElementById('query-input').value = text;
+            document.getElementById('query-input').focus();
+        }
+
+        // Handle form submission
+        document.getElementById('chat-form').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            
+            const queryInput = document.getElementById('query-input');
+            const query = queryInput.value.trim();
+            
+            if (!query) return;
+            
+            const responseContainer = document.getElementById('response-container');
+            const loadingOverlay = document.getElementById('loading-overlay');
+            
+            // Remove welcome message if present
+            const welcomeMsg = responseContainer.querySelector('.welcome-message');
+            if (welcomeMsg) welcomeMsg.remove();
+            
+            // Show loading overlay
+            loadingOverlay.classList.remove('hidden');
+            
+            // Disable input
+            queryInput.disabled = true;
+            document.getElementById('submit-button').disabled = true;
+            
+            try {
+                // Send request to server
+                const response = await fetch('/get-response', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        query: query,
+                        get_followup: followupEnabled
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Create response block
+                    const responseItem = document.createElement('div');
+                    responseItem.classList.add('response-item');
+                    
+                    // Build HTML
+                    let html = `
+                        <div class="user-query-container">
+                            <i class="bi bi-person-circle user-icon"></i>
+                            <div class="user-query-text">${escapeHtml(query)}</div>
+                        </div>
+                        <div class="bot-response-container">
+                            <i class="bi bi-robot bot-icon"></i>
+                            <div class="bot-response-content">
+                                <div class="response-answer">${formatText(data.answer)}</div>
+                    `;
+                    
+                    // Add context badges
+                    html += `<div class="context-badges">`;
+                    if (data.is_binning) {
+                        html += `<span class="badge badge-rag"><i class="bi bi-journal-text"></i> RAG Active</span>`;
+                    }
+                    html += `<span class="badge badge-sct"><i class="bi bi-diagram-3"></i> SCT Context</span>`;
+                    html += `</div>`;
+                    
+                    // Add collapsible contexts
+                    if (data.sct_context) {
+                        html += `
+                            <details class="context-details">
+                                <summary><i class="bi bi-info-circle"></i> Digital Reference Context</summary>
+                                <pre class="context-pre">${escapeHtml(data.sct_context)}</pre>
+                            </details>
+                        `;
+                    }
+                    
+                    if (data.rag_context) {
+                        html += `
+                            <details class="context-details">
+                                <summary><i class="bi bi-book"></i> Research Paper Context</summary>
+                                <pre class="context-pre">${escapeHtml(data.rag_context)}</pre>
+                            </details>
+                        `;
+                    }
+                    
+                    // Add follow-up questions
+                    if (data.followup_questions && data.followup_questions.length > 0) {
+                        html += `
+                            <div class="followup-container">
+                                <p class="followup-title"><i class="bi bi-lightbulb"></i> Related Questions:</p>
+                                <div class="followup-list">
+                        `;
+                        data.followup_questions.forEach(q => {
+                            html += `<button class="followup-question" onclick="fillExample('${escapeHtml(q)}')">${escapeHtml(q)}</button>`;
+                        });
+                        html += `</div></div>`;
+                    }
+                    
+                    html += `</div></div>`;
+                    responseItem.innerHTML = html;
+                    
+                    // Add to container and scroll
+                    responseContainer.appendChild(responseItem);
+                    
+                    // Render LaTeX formulas
+                    renderLatex(responseItem);
+                    
+                    responseItem.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    
+                } else {
+                    throw new Error(data.answer || 'Server error');
+                }
+                
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error: ' + error.message);
+            } finally {
+                // Hide loading and re-enable input
+                loadingOverlay.classList.add('hidden');
+                queryInput.disabled = false;
+                queryInput.value = '';
+                queryInput.focus();
+                document.getElementById('submit-button').disabled = false;
+            }
+        });
+
+        // Utility functions
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function formatText(text) {
+            // Step 1: Convert markdown headers (# Header) to HTML with proper styling
+            text = text.replace(/^### (.+)$/gm, '<h3 class="response-heading-3">$1</h3>');
+            text = text.replace(/^## (.+)$/gm, '<h2 class="response-heading-2">$1</h2>');
+            text = text.replace(/^# (.+)$/gm, '<h1 class="response-heading-1">$1</h1>');
+            
+            // Step 2: Convert bold text (**text** or __text__) to HTML
+            text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+            text = text.replace(/__(.+?)__/g, '<strong>$1</strong>');
+            
+            // Step 3: Convert italic text (*text* or _text_) to HTML
+            text = text.replace(/\*(.+?)\*/g, '<em>$1</em>');
+            text = text.replace(/_(.+?)_/g, '<em>$1</em>');
+            
+            // Step 4: Convert bullet points (* item or - item) to HTML lists
+            text = text.replace(/^[\*\-] (.+)$/gm, '<li class="response-list-item">$1</li>');
+            text = text.replace(/(<li class="response-list-item">.*<\/li>)/s, '<ul class="response-list">$1</ul>');
+            
+            // Step 5: Convert inline LaTeX \( formula \) to KaTeX spans
+            text = text.replace(/\\\((.+?)\\\)/g, '<span class="latex-inline">$1</span>');
+            
+            // Step 6: Convert display LaTeX \[ formula \] to KaTeX blocks
+            text = text.replace(/\\\[(.+?)\\\]/g, '<div class="latex-display">$1</div>');
+            
+            // Step 7: Convert newlines to <br>
+            text = text.replace(/\n/g, '<br>');
+            
+            return text;
+        }
+
+        function renderLatex(element) {
+            // Render inline LaTeX
+            element.querySelectorAll('.latex-inline').forEach(span => {
+                try {
+                    katex.render(span.textContent, span, { throwOnError: false });
+                } catch (e) {
+                    console.error('KaTeX inline error:', e);
+                }
+            });
+            
+            // Render display LaTeX
+            element.querySelectorAll('.latex-display').forEach(div => {
+                try {
+                    katex.render(div.textContent, div, { 
+                        throwOnError: false,
+                        displayMode: true 
+                    });
+                } catch (e) {
+                    console.error('KaTeX display error:', e);
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>

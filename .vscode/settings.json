@@ -1,0 +1,6 @@
+{
+    "python.analysis.extraPaths": [
+        "./RAG_Implementation",
+        "./System_KG_Implementation"
+    ]
+}
