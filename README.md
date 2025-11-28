@@ -6,7 +6,7 @@
 **Supervisor from University:** Mr. Ruben Nuredini
 ---
 
-## 📋 Table of Contents
+## Table of Contents
 
 - [Overview](#overview)
 - [System Architecture](#system-architecture)
@@ -23,7 +23,7 @@
 
 ---
 
-## 🎯 Overview
+## Overview
 
 This project implements a **hybrid question-answering system** that combines:
 
@@ -33,11 +33,11 @@ This project implements a **hybrid question-answering system** that combines:
 
 ### Key Features
 
-- ✅ **Intelligent Intent Classification**: Automatically detects binning-related questions
-- ✅ **Multi-Source Context Fusion**: Combines ontology knowledge + research papers + LLM reasoning
-- ✅ **Auto-Update Detection**: Monitors Digital Reference changes and regenerates embeddings
-- ✅ **Checkpoint/Resume Support**: Robust embedding generation with progress tracking
-- ✅ **Rate Limiting & Error Handling**: Production-ready with retry logic and token management
+- **Intelligent Intent Classification**: Automatically detects binning-related questions
+- **Multi-Source Context Fusion**: Combines ontology knowledge + research papers + LLM reasoning
+- **Auto-Update Detection**: Monitors Digital Reference changes and regenerates embeddings
+- **Checkpoint/Resume Support**: Robust embedding generation with progress tracking
+- **Rate Limiting & Error Handling**: Production-ready with retry logic and token management
 
 ### Use Cases
 
@@ -48,7 +48,7 @@ This project implements a **hybrid question-answering system** that combines:
 
 ---
 
-## 🏗️ System Architecture
+## System Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -109,7 +109,7 @@ This project implements a **hybrid question-answering system** that combines:
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 Code/
@@ -131,11 +131,11 @@ Code/
 ├── RAG_Implementation/                # Conditional RAG Pipeline
 │   ├── load_pdfs.py                   # PDF extraction & chunking
 │   ├── embed_chunks.py                # Embedding generation (checkpoint support)
-│   ├── intent_classifier.py           # 🎯 Binning question detector
+│   ├── intent_classifier.py           # Binning question detector
 │   ├── rag_retriever.py               # FAISS-based semantic search
 │   └── Papers/                        # Research papers (PDF format)
 │
-├── SCT_UI/                            # 🌐 Web User Interface
+├── SCT_UI/                            # Web User Interface
 │   ├── app.py                         # Flask application server
 │   ├── requirements.txt               # UI-specific dependencies
 │   ├── templates/
@@ -154,7 +154,7 @@ Code/
 
 ---
 
-## 🛠️ Prerequisites
+## Prerequisites
 
 ### Software Requirements
 
@@ -189,7 +189,7 @@ python-dotenv>=1.0.0  # Environment configuration
 
 ---
 
-## 📦 Installation
+## Installation
 
 ### Step 1: Clone/Download Project
 
@@ -223,7 +223,7 @@ python -c "import openai, faiss, numpy; print('All packages installed successful
 
 ---
 
-## 🚀 Usage
+## Usage
 
 ### 1. SCT Fusion Query (Main System)
 
@@ -299,13 +299,13 @@ python app.py
 - Collapsible context details
 
 **Features:**
-- ✅ **Interactive Chat**: Clean, responsive interface with example questions
-- ✅ **Real-time Processing**: Loading indicators and smooth animations
-- ✅ **Context Visualization**: View SCT and RAG contexts used for each answer
-- ✅ **Follow-up Questions**: AI-generated related questions for exploration
-- ✅ **Conversation Management**: Reset functionality to start fresh
-- ✅ **LaTeX Rendering**: Mathematical formulas displayed with KaTeX
-- ✅ **Markdown Support**: Proper formatting for headings, lists, and emphasis
+- **Interactive Chat**: Clean, responsive interface with example questions
+- **Real-time Processing**: Loading indicators and smooth animations
+- **Context Visualization**: View SCT and RAG contexts used for each answer
+- **Follow-up Questions**: AI-generated related questions for exploration
+- **Conversation Management**: Reset functionality to start fresh
+- **LaTeX Rendering**: Mathematical formulas displayed with KaTeX
+- **Markdown Support**: Proper formatting for headings, lists, and emphasis
 
 **UI Controls:**
 - **Enable/Disable Follow-up Questions**: Toggle to get AI-suggested related questions
@@ -329,7 +329,7 @@ Your question here please: <enter question>
 
 ---
 
-## 📚 Modules Description
+## Modules Description
 
 ### System_KG_Implementation/
 
@@ -477,7 +477,7 @@ answer, sct_ctx, rag_ctx, is_binning = ask_question("What is bin yield?")
 
 ---
 
-## ⚙️ Configuration
+## Configuration
 
 ### API Settings
 
@@ -511,7 +511,7 @@ SLEEP = 60/MAX_CALLS_MIN + 0.5  # ~4.5 seconds between requests
 
 ---
 
-## 🔄 Workflow
+## Workflow
 
 ### End-to-End Pipeline
 
@@ -538,7 +538,7 @@ SLEEP = 60/MAX_CALLS_MIN + 0.5  # ~4.5 seconds between requests
 
 ---
 
-## 📖 API Documentation
+## API Documentation
 
 ### `ask_question(question: str) → tuple`
 
@@ -607,7 +607,7 @@ for chunk in chunks:
 
 ---
 
-## 🐛 Troubleshooting
+## Troubleshooting
 
 ### Issue: `FileNotFoundError: ca-bundle.crt`
 
@@ -659,7 +659,7 @@ SLEEP = 5.0  # Increase to 5 seconds between requests
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 ### Code Style
 
@@ -673,19 +673,6 @@ SLEEP = 5.0  # Increase to 5 seconds between requests
 2. Add comprehensive comments
 3. Test with multiple edge cases
 4. Update README.md
-
-### Testing
-
-```powershell
-# Test intent classifier
-python test_intent.py
-
-# Test authentication
-python base_file.py
-
-# Test RAG retrieval
-python -c "from rag_retriever import retrieve_binning_chunks; print(retrieve_binning_chunks('test'))"
-```
 
 ---
 
