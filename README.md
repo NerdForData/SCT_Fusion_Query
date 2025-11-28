@@ -490,8 +490,8 @@ MODEL_EMB = "sfr-embedding-mistral"
 ### Authentication
 
 ```python
-USERNAME = "INFINEON\\Aishwarya"
-PASSWORD = "Gauri@123456789"
+USERNAME = "INFINEON\\***********"
+PASSWORD = "**************"
 ```
 
 ### Retrieval Parameters
